@@ -3,6 +3,32 @@ body {
   background-color: black;
 }
 
+/* line 5, ../../compass/sass/_home.scss */
+#photos-wrapper {
+  text-align: center;
+  width: 80%;
+  margin: 50px auto 0;
+}
+
+/* line 11, ../../compass/sass/_home.scss */
+img {
+  display: block;
+  margin: auto;
+  width: 60%;
+}
+
+/* line 17, ../../compass/sass/_home.scss */
+#button-holder {
+  margin-top: 5px;
+  text-align: center;
+}
+
+/* line 23, ../../compass/sass/_home.scss */
+.foot {
+  clear: both;
+  margin-top: 30px;
+}
+
 /* line 1, ../../compass/sass/_nav.scss */
 body {
   color: green;
