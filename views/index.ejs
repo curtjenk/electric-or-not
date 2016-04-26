@@ -1,0 +1,41 @@
+<% include head %>
+<header>
+<% include nav %>
+</header>
+
+<body>
+<div class="container-fluid">
+  <div class="row">
+    <div id="photos-wrapper">
+      <h1>Is it electric?</h1>
+      <div id="photo">
+          <img src="/images/<%=carImage%>">
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div id="button-holder">
+      
+      <div class="col-md-offset-4 col-md-2">
+        <form class="vote-button" action="electric" method="post">
+          <input type="hidden" name="photo" value="<%=carImage%>">
+          <input type="submit" class="btn btn-success" value="Electric!">
+        </form>
+      </div>
+
+      <div class="col-md-2">
+        <form class="vote-button" action="poser" method="post">
+          <input type="hidden" name="photo" value="<%=carImage%>">
+          <input type="submit" class="btn btn-danger" value="Poser!">
+        </form>
+      </div>
+      <div><%=carImage%></div>
+    </div>
+  
+  </div>
+
+</div>
+
+</body>
+<% include footer %>
