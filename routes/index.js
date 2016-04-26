@@ -10,10 +10,9 @@ var db;
 var allPhotos;
 var photosToShow = [];
 
+//create a db connection and assign it to a var
 mongoClient.connect(mongoUrl, function(error, database) {
-        if (error) {
-            console.log(error);
-        }
+        db = database;
         database.collection('cars').find().toArray(function(error, result) {
             allPhotos = result;
             db = database;
@@ -23,49 +22,40 @@ mongoClient.connect(mongoUrl, function(error, database) {
     })
     /* GET home page. */
 router.get('/', function(req, res, next) {
-    /*
-1 Get all pictures from Mongo
-2 get the current user from mongo based on IP Addr
-3. find out which pictures the current user has not voted on
-4 load all the documents into an array
-5 pick a random one
-6 send the random one to the view (index.ejs)
-    */
     var currIP = req.ip;
-    var remoteAddress = req.connection.remoteAddress;
-    // console.log(currIP + " -----" + remoteAddress);
     db.collection('users').find({ ip: currIP }).toArray(function(error, userResult) {
-        // console.log(userResult.length);
-
-        if (userResult.length == 0) {
-            photosToShow = allPhotos;
-            db.collection('users').insertOne({ ip: currIP });
-        } else {
-            photosToShow = allPhotos;
-
-        }
-        var rndx = Math.floor(Math.random() * allPhotos.length);
-        res.render('index', { carImage: allPhotos[rndx].imageSrc });
-
-    })
-
+        var photosVoted = [];
+        userResult.forEach(function(val) {
+                photosVoted.push(val.image);
+            })
+        //$nin is a mongodb key word for "not in"
+        //get all the cars that the user has not voted on.
+        //if voted on every image, send him to the standings page.
+        db.collection('cars').find({ imageSrc: { $nin: photosVoted } }).toArray(function(error, result) {
+            console.log(result)
+            if (result.length > 0) {
+                var rndx = Math.floor(Math.random() * result.length);
+                res.render('index', { carImage: result[rndx].imageSrc });
+            } else {
+                db.collection('cars').find({}).toArray(function(error, result) {
+                    result.sort(descendingVotes);
+                    res.render('standings', { standings: result });
+                })
+            }
+        })
+    });
 });
 
 router.get('/standings', function(req, res, next) {
-    
+
     db.collection('cars').find({}).toArray(function(error, result) {
         result.sort(descendingVotes);
-        // console.log(result);
-        res.render('standings', {standings: result});
+        res.render('standings', { standings: result });
     })
 
 })
 
-function descendingVotes(a, b) {
-    if (!b.totalVotes) {b.totalVotes = 0};
-    if (!a.totalVotes) {a.totalVotes = 0};
-    return b.totalVotes - a.totalVotes;
-}
+
 
 /* Set up the post electric page. */
 router.post('/electric', function(req, res, next) {
@@ -99,7 +89,7 @@ router.post('/electric', function(req, res, next) {
 
 router.post('/poser', function(req, res, next) {
     /*
-    1 we know they voted Electric
+    1 we know they voted poser
     2 we know what they voted on, because we passed it in the req.body var
     3 we know who they are because we know their ip.
     4 update the users collection to include: user ip and photo they voted on
@@ -127,5 +117,10 @@ router.post('/poser', function(req, res, next) {
     res.redirect('/');
 });
 
+function descendingVotes(a, b) {
+    if (!b.totalVotes) { b.totalVotes = 0 };
+    if (!a.totalVotes) { a.totalVotes = 0 };
+    return b.totalVotes - a.totalVotes;
+}
 
 module.exports = router;
