@@ -3,10 +3,10 @@ var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
+var bodyParser = require('body-parser');  //helps with Posts request ie, the Body in request.bod
 
-var routes = require('./routes/index');
-var users = require('./routes/users');
+var routes = require('./routes/index');  //use the index.js file in the "routes" folder
+//var users = require('./routes/users'); not used!
 
 var app = express();
 
@@ -20,10 +20,10 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public')));  //serve up files relative to the "public" folder
 
-app.use('/', routes);
-app.use('/users', users);
+app.use('/', routes);  //determines the path of the homepage.  Tie index.js to our app as the homepage
+//app.use('/users', users); //not using 'users'
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

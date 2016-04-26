@@ -17,7 +17,7 @@ mongoClient.connect(mongoUrl, function(error, database) {
         database.collection('cars').find().toArray(function(error, result) {
             allPhotos = result;
             db = database;
-            console.log(allPhotos);
+            // console.log(allPhotos);
         })
 
     })
@@ -33,15 +33,16 @@ router.get('/', function(req, res, next) {
     */
     var currIP = req.ip;
     var remoteAddress = req.connection.remoteAddress;
-    console.log(currIP + " -----" + remoteAddress);
+    // console.log(currIP + " -----" + remoteAddress);
     db.collection('users').find({ ip: currIP }).toArray(function(error, userResult) {
-        console.log(userResult.length);
+        // console.log(userResult.length);
 
         if (userResult.length == 0) {
             photosToShow = allPhotos;
             db.collection('users').insertOne({ ip: currIP });
         } else {
-            console.log("found the user")
+            photosToShow = allPhotos;
+
         }
         var rndx = Math.floor(Math.random() * allPhotos.length);
         res.render('index', { carImage: allPhotos[rndx].imageSrc });
@@ -52,38 +53,32 @@ router.get('/', function(req, res, next) {
 
 /* Set up the post electric page. */
 router.post('/electric', function(req, res, next) {
-    res.send("The user chose " + req.body.photo + " as an electric picture");
+    //res.send("The user chose " + req.body.photo + " as an electric picture");
     /*
-    1 we know they voted Electric
-    2 we know what they voted on, because we passed it in the req.body var
-    3 we know who they are because we know their ip.
     4 update the users collection to include: user ip and photo they voted on
     5 update the images/cars collection by 1
     6 send them back to the main page so they can vote again (or render a page)
     6b if the user has voted on every image in the DB, notify them
     */
-    db.collection('cars').updateOne({ "imageSrc": req.body.photo }, {
-            $set: { "totalVotes": 1 }
-        },
-        function(error, results) {
-            console.log(results);
-        }
-    );
-
-    var currIP = req.ip;
-    db.collection('users').find({ ip: currIP }).toArray(function(error, userResult) {
-
-        if (userResult.length > 0) {
-
-            db.collection('users').updateOne({
-                "ip": currIP
-            }, {
-                $set: {"images": "peel.jpg"}
-            }, { upsert: true })
-        }
+    db.collection('users').insertOne({
+        ip: req.ip,
+        vote: 'electric',
+        image: req.body.photo
+    })
+    db.collection('cars').find({ imageSrc: req.body.photo }).toArray(function(error, result) {
+        var newTotal = result[0].totalVotes + 1 || 1;
+        console.log(req.body.photo + " = " + newTotal);
+        db.collection('cars').updateOne({ "imageSrc": req.body.photo }, {
+                $set: { "totalVotes": newTotal }
+            },
+            function(error, results) {
+                //console.log(results);
+            }
+        );
 
     })
-
+    res.redirect('/');  //6. send back to home page.
+    //optionally res.render a picture of that car with the total votes.
 });
 
 router.post('/poser', function(req, res, next) {
@@ -97,14 +92,24 @@ router.post('/poser', function(req, res, next) {
 5 update the images/cars collection by 1
  6 send them back to the main page so they can vote again (or render a page)
     6b if the user has voted on every image in the DB, notify them
-*/
-    db.collection('cars').updateOne({ "imageSrc": req.body.photo }, {
-            $set: { "totalVotes": -1 }
-        },
-        function(error, results) {
-            console.log(results);
-        }
-    );
+*/db.collection('users').insertOne({
+        ip: req.ip,
+        vote: 'electric',
+        image: req.body.photo
+    })
+    db.collection('cars').find({ imageSrc: req.body.photo }).toArray(function(error, result) {
+        var newTotal = result[0].totalVotes - 1 || 0;
+        console.log(req.body.photo + " = " + newTotal);
+        db.collection('cars').updateOne({ "imageSrc": req.body.photo }, {
+                $set: { "totalVotes": newTotal }
+            },
+            function(error, results) {
+                //console.log(results);
+            }
+        );
+
+    })
+    res.redirect('/'); 
 });
 
 
