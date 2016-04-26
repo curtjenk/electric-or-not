@@ -1,0 +1,15 @@
+<% include head %>
+<header>
+<% include nav %>
+</header>
+
+<body>
+<% for(i=0; i<standings.length; i++){ %>
+  <li>
+     <img width="200" src="/images/<%=standings[i].imageSrc %>">
+     <%=standings[i].totalVotes %>
+  </li>
+<% } %>
+
+</body>
+<% include footer %>

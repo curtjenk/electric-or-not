@@ -51,6 +51,22 @@ router.get('/', function(req, res, next) {
 
 });
 
+router.get('/standings', function(req, res, next) {
+    
+    db.collection('cars').find({}).toArray(function(error, result) {
+        result.sort(descendingVotes);
+        // console.log(result);
+        res.render('standings', {standings: result});
+    })
+
+})
+
+function descendingVotes(a, b) {
+    if (!b.totalVotes) {b.totalVotes = 0};
+    if (!a.totalVotes) {a.totalVotes = 0};
+    return b.totalVotes - a.totalVotes;
+}
+
 /* Set up the post electric page. */
 router.post('/electric', function(req, res, next) {
     //res.send("The user chose " + req.body.photo + " as an electric picture");
@@ -77,28 +93,27 @@ router.post('/electric', function(req, res, next) {
         );
 
     })
-    res.redirect('/');  //6. send back to home page.
+    res.redirect('/'); //6. send back to home page.
     //optionally res.render a picture of that car with the total votes.
 });
 
 router.post('/poser', function(req, res, next) {
-    res.send("The user chose " + req.body.photo + " as poser picture");
-    // res.send(req.body);
     /*
-1 we know they voted Electric
-2 we know what they voted on, because we passed it in the req.body var
-3 we know who they are because we know their ip.
-4 update the users collection to include: user ip and photo they voted on
-5 update the images/cars collection by 1
- 6 send them back to the main page so they can vote again (or render a page)
-    6b if the user has voted on every image in the DB, notify them
-*/db.collection('users').insertOne({
+    1 we know they voted Electric
+    2 we know what they voted on, because we passed it in the req.body var
+    3 we know who they are because we know their ip.
+    4 update the users collection to include: user ip and photo they voted on
+    5 update the images/cars collection by 1
+     6 send them back to the main page so they can vote again (or render a page)
+        6b if the user has voted on every image in the DB, notify them
+    */
+    db.collection('users').insertOne({
         ip: req.ip,
         vote: 'electric',
         image: req.body.photo
     })
     db.collection('cars').find({ imageSrc: req.body.photo }).toArray(function(error, result) {
-        var newTotal = result[0].totalVotes - 1 || 0;
+        var newTotal = result[0].totalVotes - 1 || -1;
         console.log(req.body.photo + " = " + newTotal);
         db.collection('cars').updateOne({ "imageSrc": req.body.photo }, {
                 $set: { "totalVotes": newTotal }
@@ -109,7 +124,7 @@ router.post('/poser', function(req, res, next) {
         );
 
     })
-    res.redirect('/'); 
+    res.redirect('/');
 });
 
 
