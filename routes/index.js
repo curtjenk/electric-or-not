@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var mongoClient = require('mongodb').MongoClient;
-//setup to accomdate running on Heroku
+//setup to accommodate running on Heroku
 var mongoUrl = process.env.MONGODB_URI ||
     process.env.MONGOHQ_URL ||
     'mongodb://localhost:27017/electricOrNot';
